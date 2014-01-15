@@ -1,0 +1,247 @@
+#include "headers.h"
+	GtkWidget *rb_w, *rb_s1, *rb_s2, *rb_a;
+
+int state = 0 ;/* Сompatible/Incompatible in radio button*/
+//Класс для названия картинки цвета и связанных с ним изображений цветов
+
+picture::picture()
+{
+	color = "";
+	for_color = "";
+	not_color = "";
+}
+
+picture::picture(string c, string f, string n)
+{
+	color = c;
+	for_color = f;
+	not_color = n;
+}
+string picture::get_color()
+{//cout<< color;
+	return color;
+}
+string picture::get_for_color()
+{
+	//cout<< for_color;
+	return for_color;
+}
+string picture::get_not_color()
+{
+	//cout<< not_color;
+	return not_color;
+}
+picture picture::set_n_get(string c, string f, string n)
+{
+	color = c;
+	for_color = f;
+	not_color = n;
+
+	return *this;
+};
+/*-----------------------End of class "picture"-------------------------------*/
+
+//Vector of pictures
+vector<picture> picture_set;
+ int index[] = {0,1,2,3,4,5,6,7};
+
+//Fill vector
+	void fill_v()
+	{
+		picture pic;
+
+		picture_set.push_back(pic.set_n_get("red.png","for_red.png", "not_red.png"));
+
+		picture_set.push_back(pic.set_n_get("orange.png", "for_orange.png", "not_orange.png"));
+
+		picture_set.push_back(pic.set_n_get("yellow.png", "for_yellow.png", "not_yellow.png"));
+
+		picture_set.push_back(pic.set_n_get("green.png", "for_green.png", "not_green.png"));
+
+		picture_set.push_back(pic.set_n_get("blue.png", "for_blue.png", "not_blue.png"));
+
+		picture_set.push_back(pic.set_n_get("dark_blue.png", "for_dark_blue.png", "not_dark_blue.png"));
+		
+		picture_set.push_back(pic.set_n_get("violet.png", "for_violet.png", "not_violet.png"));
+
+		picture_set.push_back(pic.set_n_get("pink.png", "for_pink.png", "not_pink.png"));
+	}
+void state_c()
+{	
+	state++;
+}
+
+
+GtkWidget *coloring( string color)
+{
+    GtkWidget *box;
+    
+    GtkWidget *image;
+    /* Создаём контейнер для изображения и текста */
+    box = gtk_vbox_new (FALSE, 0);
+
+    gtk_container_set_border_width (GTK_CONTAINER (box), 2);
+    /* Определяем файл с изображением */
+	image = gtk_image_new_from_file (color.c_str());
+   
+    /* Упаковываем рисунок в контейнер */
+	gtk_container_add (GTK_CONTAINER (box), image);
+   // gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 3);
+    gtk_widget_show (image);
+    return box;
+}
+
+
+void show_colors(GtkWidget* ob, int* ind)
+{
+	
+	GtkWidget *window = NULL, *box, *image;
+	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	
+	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	if(state%2 == 0)
+	{
+	
+	image = gtk_image_new_from_file (picture_set[*ind].get_for_color().c_str());}
+	else
+	{image = gtk_image_new_from_file (picture_set[*ind].get_not_color().c_str());}
+	
+    /* Создаём контейнер для изображения и текста */
+    box = gtk_vbox_new (FALSE, 0);
+	
+    gtk_container_set_border_width (GTK_CONTAINER (box), 2);
+    /* Определяем файл с изображением */
+	gtk_container_add (GTK_CONTAINER (window), box);
+	
+   // gtk_widget_show (window);
+   
+    /* Упаковываем рисунок в контейнер */
+	gtk_container_add (GTK_CONTAINER (box), image);
+   gtk_widget_show (box);
+    gtk_widget_show (image);
+	gtk_widget_show (window);
+
+}
+
+/* Помещение кнопки цвета в таблицу*/
+GtkWidget* button_in_table(GtkWidget* button, string pic, GtkWidget* table, guint left, guint right, guint top, guint bottom )
+ {
+
+	 GtkWidget *box;
+	button = gtk_button_new();
+	box = coloring(pic);
+	gtk_widget_show (box);
+    gtk_container_add (GTK_CONTAINER (button), box);
+  
+	gtk_table_attach( GTK_TABLE(table), button, left, right, top, bottom, GTK_EXPAND,GTK_EXPAND, 5, 5 );
+	gtk_widget_show (button);
+	return button;
+ }
+//Обработка сигнала нажатия определенной кнопки цвета
+ void connect_button_to_colors(GtkWidget* button, int* ind)
+ {
+	
+	g_signal_connect(G_OBJECT (button), "clicked",
+                              G_CALLBACK (show_colors),
+							  ind); 
+ }
+color_type* choose_color_type()
+{
+	color_type *c;
+	delete c;
+		if( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_w)) )
+			c = new winter(0);
+		if( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_s1)) )
+			c = new spring(0);
+		if( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_s2)) )
+			c = new summer(0);
+		if( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_a)) )
+			c = new autumn(0);
+	return c;
+}
+
+void colors_for_you( )
+{
+	//Создание массива картинок со связанными цветами
+	fill_v();
+	GtkWidget* button = NULL;
+
+	GtkWidget *window = NULL, *table, *vbox, *rb_1, *rb_2;
+	GSList *group;
+
+	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW (window), g_locale_to_utf8("Цвета для Вас",-1,NULL,NULL,NULL));
+	
+	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+
+	vbox = gtk_vbox_new(FALSE, 0);
+
+	gtk_container_add (GTK_CONTAINER (window), vbox);
+
+/* Помещение радио кнопок в таблицу
+-----------------------------------------------------------------------*/
+   
+	table = gtk_table_new( 4, 4, TRUE);
+	gtk_box_pack_end (GTK_BOX(vbox), table, TRUE, TRUE, 0);
+
+	rb_1 = gtk_radio_button_new_with_label (NULL, g_locale_to_utf8("Совместимые",-1,NULL,NULL,NULL));
+	gtk_table_attach( GTK_TABLE(table), rb_1, 0, 2, 0, 1, GTK_EXPAND,GTK_EXPAND, 5, 5 );
+	gtk_widget_show (rb_1);
+
+	g_signal_connect (G_OBJECT (rb_1), "clicked",
+                              G_CALLBACK (state_c),
+                             NULL);
+	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (rb_1));
+	rb_2 = gtk_radio_button_new_with_label (group, g_locale_to_utf8("Несовместимые",-1,NULL,NULL,NULL));
+	
+    gtk_table_attach( GTK_TABLE(table),rb_2, 2, 4, 0, 1, GTK_EXPAND,GTK_EXPAND, 5, 5 );
+	gtk_widget_show (rb_2);
+/*-----------------------------------------------------------------------*/
+
+    /* Помещение кнопок цвета в таблицу, 
+	вызов функции связывания сигнала нажатия кнопки с появлением нужной картинки. 
+	----------------------------------------------------------------------*/
+	
+	for(int i=0, k=1; i<8; i++)// От i и k зависят границы соотв. ячейки в таблице.
+	{
+		if(i == 4)
+			k++;
+		connect_button_to_colors(button_in_table(button, picture_set[i].get_color().c_str(), table,
+			i%4 , i%4+1, k, k+1), index+i);
+	}
+  
+/*-----------------------------------------------------------------------*/
+
+	string verdict;
+	verdict ="Вам подходят цвета: " + choose_color_type()->get_colors() ;
+	GtkWidget *hbox, *label;
+	
+
+	label = gtk_label_new (g_locale_to_utf8(verdict.c_str(),-1,NULL,NULL,NULL));
+	
+	gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+	gtk_widget_show(label);
+    gtk_widget_show (table);
+	 gtk_widget_show (vbox);
+	gtk_widget_show (window);
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
